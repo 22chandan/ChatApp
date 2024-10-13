@@ -46,6 +46,8 @@ dependencies:
   firebase_storage: ^11.2.6
   path_provider: ^2.1.1
   video_player: ^2.7.1
+  flutter_gemini: ^2.0.5
+  flutter_markdown: ^0.7.4
 
 dev_dependencies:
   flutter_lints: ^2.0.0

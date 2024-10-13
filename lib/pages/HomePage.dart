@@ -15,6 +15,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class HomePage extends StatefulWidget {
@@ -36,7 +37,21 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     GetUserDetails();
-    GetUserPhoto();
+    getUserPhoto();
+    getContacts();
+    getapikey();
+  }
+
+  getapikey() async {
+    DocumentSnapshot documentSnapshot = await DataBaseService().getapi();
+    String s = documentSnapshot.get('api');
+    String model = documentSnapshot.get('model');
+    print(s);
+    await HelperFunctions().saveapi(s);
+    await HelperFunctions().savemodel(model);
+    HelperFunctions.getapikey().then((value) {
+      print("api key is $value");
+    });
   }
 
   Future<void> getContacts() async {
@@ -50,23 +65,60 @@ class _HomePageState extends State<HomePage> {
 
   Widget? imagePreview;
 
-  GetUserPhoto() async {
+  void getUserPhoto() async {
     DocumentReference userDocumentReference = DataBaseService()
         .userCollection
         .doc(FirebaseAuth.instance.currentUser!.uid);
     DocumentSnapshot documentSnapshot = await userDocumentReference.get();
-    var encode = documentSnapshot['profilePic'];
-    if (encode != "")
-      setState(() {
+
+    // Check if the document exists and has a profilePic field
+    if (documentSnapshot.exists && documentSnapshot['profilePic'] != null) {
+      var encode = documentSnapshot['profilePic'];
+
+      try {
         final List<int> decodedBytes = base64Decode(encode);
-        imagePreview = Image.memory(
-          Uint8List.fromList(decodedBytes),
-          fit: BoxFit.cover,
-          width: 50,
-          height: 150,
-          // Adjust the fit property as needed
+
+        // Check if the decoded bytes represent a valid image
+        if (decodedBytes.isNotEmpty) {
+          setState(() {
+            imagePreview = Image.memory(
+              Uint8List.fromList(decodedBytes),
+              fit: BoxFit.cover,
+              width: 190,
+              height: 190,
+            );
+          });
+        } else {
+          // If decoded bytes are empty, show default icon
+          setState(() {
+            imagePreview = Icon(
+              Icons.account_circle,
+              size: 200,
+              color: Colors.grey[700],
+            );
+          });
+        }
+      } catch (e) {
+        print("Error decoding image: $e"); // Log the error
+        // If decoding fails, show default icon
+        setState(() {
+          imagePreview = Icon(
+            Icons.account_circle,
+            size: 200,
+            color: Colors.grey[700],
+          );
+        });
+      }
+    } else {
+      // Handle the case where the image is null or doesn't exist
+      setState(() {
+        imagePreview = Icon(
+          Icons.account_circle,
+          size: 200,
+          color: Colors.grey[700],
         );
       });
+    }
   }
 
   GetUserDetails() async {
@@ -127,21 +179,10 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 50),
           children: <Widget>[
-            Align(
-              alignment: Alignment.center,
-              child: Container(
-                width: 150,
-                height: 150,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: imagePreview ??
-                      Icon(
-                        Icons.account_circle,
-                        size: 200,
-                        color: Colors.grey[700],
-                      ),
-                ),
-              ),
+            Icon(
+              Icons.account_circle,
+              size: 150,
+              color: Colors.grey[700],
             ),
             const SizedBox(
               height: 15,
@@ -151,37 +192,37 @@ class _HomePageState extends State<HomePage> {
               textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(
+            SizedBox(
               height: 30,
             ),
-            const Divider(
+            Divider(
               height: 2,
             ),
             ListTile(
-              onTap: () {},
               selected: true,
-              selectedColor: Theme.of(context).primaryColor,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.group),
-              title: const Text(
+              selectedTileColor: Theme.of(context).primaryColor,
+              onTap: () {},
+              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: Icon(Icons.group),
+              title: Text(
                 "Groups",
                 style: TextStyle(color: Colors.black),
               ),
             ),
             ListTile(
               onTap: () {
-                nextScreenReplace(
+                nextScreen(
                     context,
-                    Profile_page(
+                    ProfilePage(
                       name: name,
                       email: email,
                       phoneNumber: PhoneNumber,
                     ));
               },
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.group),
+              selected: false,
+              selectedColor: Theme.of(context).primaryColor,
+              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: Icon(Icons.person),
               title: const Text(
                 "Profile",
                 style: TextStyle(color: Colors.black),
@@ -206,14 +247,14 @@ class _HomePageState extends State<HomePage> {
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        title: const Text("Log out"),
-                        content: const Text("Are you sure you want to log out"),
+                        title: Text("Log out"),
+                        content: Text("Are you sure you want to log out"),
                         actions: [
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);
                             },
-                            child: const Text(
+                            child: Text(
                               "cancel",
                               style: TextStyle(color: Colors.red),
                             ),
@@ -223,10 +264,10 @@ class _HomePageState extends State<HomePage> {
                               await authService.SignOut();
                               Navigator.of(context).pushAndRemoveUntil(
                                   MaterialPageRoute(
-                                      builder: (context) => const LoginPage()),
+                                      builder: (context) => LoginPage()),
                                   (route) => false);
                             },
-                            child: const Text(
+                            child: Text(
                               "OK",
                               style: TextStyle(color: Colors.green),
                             ),
@@ -235,10 +276,9 @@ class _HomePageState extends State<HomePage> {
                       );
                     });
               },
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text(
+              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: Icon(Icons.exit_to_app),
+              title: Text(
                 "Logout",
                 style: TextStyle(color: Colors.black),
               ),
@@ -248,19 +288,19 @@ class _HomePageState extends State<HomePage> {
       ),
       body: groupList(),
       floatingActionButton: Container(
-        height: 100,
-        width: 80,
+        // height: 60,
+        // width: 80,
         child: FloatingActionButton(
             onPressed: () {
-              // Navigator.of(context).push(
-              //   MaterialPageRoute(
-              //       builder: (context) => ContactListPage(
-              //             UserName: name,
-              //           )),
-              // );
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => VideoRecordingScreen()),
+                MaterialPageRoute(
+                    builder: (context) => ContactListPage(
+                          UserName: name,
+                        )),
               );
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(builder: (context) => VideoRecordingScreen()),
+              // );
               // popupDailog(context);
             },
             elevation: 0,
@@ -268,7 +308,7 @@ class _HomePageState extends State<HomePage> {
             child: const Icon(
               Icons.comment_sharp,
               color: Colors.white,
-              size: 45,
+              size: 30,
             )),
       ),
     );
@@ -318,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).primaryColor),
+                        backgroundColor: Theme.of(context).primaryColor),
                     child: Text("Cancel")),
                 ElevatedButton(
                     onPressed: () async {
@@ -343,7 +383,7 @@ class _HomePageState extends State<HomePage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).primaryColor),
+                        backgroundColor: Theme.of(context).primaryColor),
                     child: Text("Create "))
               ],
             );

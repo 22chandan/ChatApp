@@ -5,9 +5,12 @@ import 'package:chatapp/shared/constants.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Gemini.init(apiKey: 'AIzaSyDek5NPf5H_JjEs-ASzaIkOTTTtMZaqqUs');
+
   if (kIsWeb) {
     await Firebase.initializeApp(
         options: FirebaseOptions(

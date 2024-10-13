@@ -5,6 +5,8 @@ class DataBaseService {
   DataBaseService({this.uid});
   final CollectionReference userCollection =
       FirebaseFirestore.instance.collection("users");
+  final CollectionReference apicollection =
+      FirebaseFirestore.instance.collection("OpenApi");
   final CollectionReference groupCollection =
       FirebaseFirestore.instance.collection("groups");
   Future<void> updataUserData(
@@ -28,6 +30,10 @@ class DataBaseService {
 
   GetUserGroup() async {
     return await userCollection.doc(uid).snapshots();
+  }
+
+  getapi() async {
+    return await apicollection.doc('api').get();
   }
 
   Future CreateGroup(
@@ -118,9 +124,9 @@ class DataBaseService {
     }
   }
 
-  sendMessage(String groupId, Map<String, dynamic> msg) {
-    groupCollection.doc(groupId).collection('messages').add(msg);
-    groupCollection.doc(groupId).update({
+  Future sendMessage(String groupId, Map<String, dynamic> msg) async {
+    await groupCollection.doc(groupId).collection('messages').add(msg);
+    await groupCollection.doc(groupId).update({
       "recentMessage": msg['message'],
       "recentMessageSender": msg['sender'],
       "recentMessageTime": msg['time'].toString(),

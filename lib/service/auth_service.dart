@@ -35,8 +35,7 @@ class AuthService {
         return true;
       }
     } on FirebaseAuthException catch (e) {
-      print(e);
-      return false;
+      throw Exception(e);
     }
 
     return false;

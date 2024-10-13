@@ -174,7 +174,7 @@ class _ContactListPageState extends State<ContactListPage> {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).primaryColor),
+                        backgroundColor: Theme.of(context).primaryColor),
                     child: Text("Cancel")),
                 ElevatedButton(
                     onPressed: () async {
@@ -199,7 +199,7 @@ class _ContactListPageState extends State<ContactListPage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).primaryColor),
+                        backgroundColor: Theme.of(context).primaryColor),
                     child: Text("Create "))
               ],
             );

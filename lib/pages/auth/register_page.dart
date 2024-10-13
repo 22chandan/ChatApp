@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:chatapp/helper/helper_function.dart';
 import 'package:chatapp/pages/HomePage.dart';
 import 'package:chatapp/pages/auth/login_page.dart';
@@ -140,7 +142,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: Theme.of(context).primaryColor,
+                            backgroundColor: Theme.of(context).primaryColor,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -190,9 +192,10 @@ class _RegisterPageState extends State<RegisterPage> {
         _isLoading = true;
       });
       await authService
-          .registerUserWithEmailandPassword(
-              fullName, email, password, PhoneNumber)
+          .registerUserWithEmailandPassword(fullName.trim(), email.trim(),
+              password.trim(), PhoneNumber.trim())
           .then((value) async {
+        log(value.toString());
         if (value) {
           // HomePage
           await HelperFunctions.SaveUserLoggedInStatus(true);

@@ -7,6 +7,8 @@ class HelperFunctions {
   static String profileImage = "";
   static String UserNumber = "USERNUMBERKEY";
   static String ProfileImage = "USER";
+  static String apikey = "apikey";
+  static String model = "model";
   static List<String> contact = [];
 
   // ignore: non_constant_identifier_names
@@ -48,6 +50,26 @@ class HelperFunctions {
   static Future<List<String>?> GetContacts() async {
     SharedPreferences sf = await SharedPreferences.getInstance();
     return sf.getStringList(contact as String);
+  }
+
+  static Future<String?> getapikey() async {
+    SharedPreferences sf = await SharedPreferences.getInstance();
+    return sf.getString(apikey);
+  }
+
+  Future<void> saveapi(String apiKey1) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(apikey, apiKey1);
+  }
+
+  static Future<String?> getmodel() async {
+    SharedPreferences sf = await SharedPreferences.getInstance();
+    return sf.getString(model);
+  }
+
+  Future<void> savemodel(String apiKey1) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(model, apiKey1);
   }
 
   static Future getUserName() async {
